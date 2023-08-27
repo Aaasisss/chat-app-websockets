@@ -6,6 +6,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const cors = require("cors");
+
 app.use(cors());
 
 const io = new Server(server, {
@@ -17,11 +18,20 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
-  console.log(socket.id);
+  console.log("websocket initiated: " + socket.id);
+
   socket.on("send_message", (data) => {
     console.log(data);
-    socket.broadcast.emit("receive_message", { message: data.message });
+    try {
+      const regex = new RegExp(data.regex);
+      console.log("regex");
+      console.log(regex);
+      const match = regex.test(data.message);
+      console.log(match);
+      socket.emit("receive_message", { result: !!match });
+    } catch (error) {
+      console.log(console.error());
+    }
   });
 });
 
